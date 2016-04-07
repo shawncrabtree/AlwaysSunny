@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sun.alwayssunny" >
+    package="com.sun.alwayssunny">
 
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="17"        />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
