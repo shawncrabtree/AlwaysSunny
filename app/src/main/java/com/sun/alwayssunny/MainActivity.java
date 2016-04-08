@@ -39,26 +39,26 @@ import java.util.Locale;
 public class MainActivity extends Activity implements LocationListener {
 
     protected LocationManager locationManager;
-    protected LocationListener locationListener;
-    protected Context context;
     TextView txtLat;
     TextView cityTV;
-    String lat;
-    String provider;
-    protected String latitude,longitude;
-    protected boolean gps_enabled,network_enabled;
 
-    private TextView textView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         txtLat = (TextView) findViewById(R.id.locationTV);
         cityTV = (TextView) findViewById(R.id.cityTV);
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, this);
     }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        txtLat.setText(R.string.your_location);
+        cityTV.setText(R.string.your_location);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         txtLat = (TextView) findViewById(R.id.locationTV);
@@ -77,6 +77,8 @@ public class MainActivity extends Activity implements LocationListener {
         if (addresses != null && addresses.size() > 0){
             cityTV.setText(addresses.get(0).getLocality());
         }
+
+        locationManager.removeUpdates(this);
     }
 
     @Override
