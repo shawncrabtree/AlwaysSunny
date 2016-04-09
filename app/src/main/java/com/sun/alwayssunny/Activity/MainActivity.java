@@ -1,46 +1,31 @@
-package com.sun.alwayssunny;
+package com.sun.alwayssunny.Activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
+import com.sun.alwayssunny.API.WeatherAPI;
+import com.sun.alwayssunny.R;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends Activity implements LocationListener {
 
     protected LocationManager locationManager;
-    TextView txtLat;
-    TextView cityTV;
+    protected WeatherAPI weatherService;
+    protected TextView txtLat;
+    protected TextView cityTV;
+    protected TextView weatherTV;
+    protected TextView sunnyTV;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +33,8 @@ public class MainActivity extends Activity implements LocationListener {
         setContentView(R.layout.activity_main);
         txtLat = (TextView) findViewById(R.id.locationTV);
         cityTV = (TextView) findViewById(R.id.cityTV);
+        weatherTV = (TextView) findViewById(R.id.weatherTV);
+        sunnyTV = (TextView) findViewById(R.id.sunnyTV);
     }
 
     @Override
@@ -55,14 +42,15 @@ public class MainActivity extends Activity implements LocationListener {
         super.onResume();
         txtLat.setText(R.string.your_location);
         cityTV.setText(R.string.your_location);
+        weatherTV.setText(R.string.your_location);
+        sunnyTV.setText(R.string.your_location);
+        weatherService = new WeatherAPI(this);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        txtLat = (TextView) findViewById(R.id.locationTV);
-        cityTV = (TextView) findViewById(R.id.cityTV);
         double lat = location.getLatitude();
         double lng = location.getLongitude();
         txtLat.setText("Latitude:" + lat + ", Longitude:" + lng);
@@ -74,11 +62,28 @@ public class MainActivity extends Activity implements LocationListener {
             e.printStackTrace();
         }
 
+        Address address = null;
         if (addresses != null && addresses.size() > 0){
-            cityTV.setText(addresses.get(0).getLocality());
+            address = addresses.get(0);
         }
 
+        cityTV.setText(address.getLocality());
+        weatherService.execute(address);
         locationManager.removeUpdates(this);
+    }
+
+    public void setWeather(final String weather){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                weatherTV.setText(weather);
+                sunnyTV.setText(isSunny(weather));
+            }
+        });
+    }
+
+    private String isSunny(String weather){
+        return String.valueOf(weather.toLowerCase().contains("sun"));
     }
 
     @Override
