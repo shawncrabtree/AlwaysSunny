@@ -30,7 +30,7 @@ public class WeatherAPI extends AsyncTask<Address, Integer, String> {
     protected String doInBackground(Address ... addresses) {
         String jsonString = getWeatherJson(addresses[0]);
         String weather = getWeather(jsonString);
-        this.activity.setWeather(weather);
+        //this.activity.setWeather(weather);
         return jsonString;
     }
 
