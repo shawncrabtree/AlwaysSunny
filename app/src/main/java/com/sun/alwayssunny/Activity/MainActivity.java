@@ -1,6 +1,7 @@
 package com.sun.alwayssunny.Activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,45 +11,72 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
 import com.sun.alwayssunny.R;
 
-public class MainActivity extends FragmentActivity implements LocationListener {
+public class MainActivity extends Activity implements LocationListener {
 
     protected LocationManager locationManager;
     protected Handler splashScreenHandler;
     protected Runnable goToLocationList;
+    protected boolean isLocationsView;
+    double lat;
+    double lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
+        isLocationsView = false;
 
-    @Override
-    public void onResume(){
-        super.onResume();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        }
 
         splashScreenHandler = new Handler();
         goToLocationList = new Runnable() {
             @Override
             public void run() {
                 setContentView(R.layout.locations_view);
-                locationManager.removeUpdates(MainActivity.this);
+                isLocationsView = true;
             }
         };
-        splashScreenHandler.postDelayed(goToLocationList, 30000);
+        splashScreenHandler.postDelayed(goToLocationList, 2000);
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        double lat = location.getLatitude();
-        double lng = location.getLongitude();
+        lat = location.getLatitude();
+        lng = location.getLongitude();
 
-        locationManager.removeUpdates(this);
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.removeUpdates(this);
+        }
 
+        if(!isLocationsView){
+            GoToCurrentLocation();
+        }
+        else{
+            Button bt = (Button) findViewById(R.id.currentLocation);
+            bt.setText(lat + " " + lng);
+            bt.setEnabled(true);
+        }
+    }
+
+    public void GoToCurrentLocation(View v){
+        GoToCurrentLocation();
+    }
+
+    public void GoToCurrentLocation(){
         final Intent intent = new Intent(this, ResultsActivity.class);
         intent.putExtra("lat", lat);
         intent.putExtra("lng", lng);
