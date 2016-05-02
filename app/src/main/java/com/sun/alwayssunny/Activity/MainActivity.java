@@ -73,7 +73,6 @@ public class MainActivity extends Activity implements LocationListener {
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
-        new getWeatherData().execute(lat, lng);
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(this);
@@ -117,37 +116,5 @@ public class MainActivity extends Activity implements LocationListener {
         Log.d("Latitude","status");
     }
 
-    private class getWeatherData extends AsyncTask<Double, String, Void>
-    {
-        @Override
-        protected Void doInBackground(Double... locations) {
-            JSONObject reader;
-            JSONArray jArray = new JSONArray();
-            String jsonString = WeatherAPI.getWeatherStringFromURL();
-            try {
-                reader = new JSONObject(jsonString);
-                jArray = reader.getJSONArray("list");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
-            ArrayList<WeatherStation> stations = new ArrayList<WeatherStation>();
-            for(int i = 0; i < jArray.length(); i++) {
-                try {
-                    JSONObject jObj = jArray.getJSONObject(i);
-                    int cloudLevel = jObj.getJSONObject("clouds").getInt("all");
-                    if (cloudLevel == 0) {
-                        WeatherStation station = WeatherAPI.getWeatherStationFromJSONObject(jObj);
-                        stations.add(station);
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            // TODO: Do something with the data retrieved by the async task.
-            return null;
-        }
-    }
 }
