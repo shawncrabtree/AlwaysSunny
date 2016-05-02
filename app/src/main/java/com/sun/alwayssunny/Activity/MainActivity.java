@@ -5,9 +5,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
@@ -19,6 +21,20 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.sun.alwayssunny.R;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.sun.alwayssunny.API.WeatherAPI;
+import com.sun.alwayssunny.Classes.WeatherStation;
 
 public class MainActivity extends Activity implements LocationListener {
 
@@ -57,6 +73,7 @@ public class MainActivity extends Activity implements LocationListener {
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
+        new getWeatherData().execute(lat, lng);
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(this);
@@ -98,5 +115,39 @@ public class MainActivity extends Activity implements LocationListener {
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
         Log.d("Latitude","status");
+    }
+
+    private class getWeatherData extends AsyncTask<Double, String, Void>
+    {
+        @Override
+        protected Void doInBackground(Double... locations) {
+            JSONObject reader;
+            JSONArray jArray = new JSONArray();
+            String jsonString = WeatherAPI.getWeatherStringFromURL();
+            try {
+                reader = new JSONObject(jsonString);
+                jArray = reader.getJSONArray("list");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            ArrayList<WeatherStation> stations = new ArrayList<WeatherStation>();
+            for(int i = 0; i < jArray.length(); i++) {
+                try {
+                    JSONObject jObj = jArray.getJSONObject(i);
+                    int cloudLevel = jObj.getJSONObject("clouds").getInt("all");
+                    if (cloudLevel == 0) {
+                        WeatherStation station = WeatherAPI.getWeatherStationFromJSONObject(jObj);
+                        stations.add(station);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // TODO: Do something with the data retrieved by the async task.
+            return null;
+        }
     }
 }

@@ -5,6 +5,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 
 import com.sun.alwayssunny.Activity.MainActivity;
+import com.sun.alwayssunny.Classes.WeatherStation;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,32 +18,12 @@ import java.net.URL;
 /**
  * Created by Shawn on 4/8/2016.
  */
-public class WeatherAPI extends AsyncTask<Address, Integer, String> {
+public class WeatherAPI {
 
-    private final String appid = "&APPID=6da92a2d64daa244d019613434ffe49f";
-    private MainActivity activity;
-
-    public WeatherAPI(MainActivity activity){
-        this.activity = activity;
-    }
-
-    @Override
-    protected String doInBackground(Address ... addresses) {
-        String jsonString = getWeatherJson(addresses[0]);
-        String weather = getWeather(jsonString);
-        //this.activity.setWeather(weather);
-        return jsonString;
-    }
-
-
-    // todo use params http://stackoverflow.com/questions/2959316/how-to-add-parameters-to-a-http-get-request-in-android
-    public String getWeatherJson(Address address){
+    public static String getWeatherStringFromURL(){
         URL url;
         try {
-            url = new URL("http://api.openweathermap.org/data/2.5/weather?zip="
-                                + address.getPostalCode() + ","
-                                + address.getCountryCode()
-                                + appid);
+            url = new URL("http://api.openweathermap.org/data/2.5/box/city?bbox=-124.159764,41.950203,-116.887636,45.763235,100000&cluster=no&units=imperial&appid=2ab91d37d2983284cd0e8a970e078544");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -66,21 +47,18 @@ public class WeatherAPI extends AsyncTask<Address, Integer, String> {
         return jsonString;
     }
 
-    public String getWeather(String jsonString){
-        String weatherMain = "";
-        try{
-            JSONObject jObject = new JSONObject(jsonString);
-            JSONObject weather = jObject.getJSONArray("weather")
-                    .getJSONObject(0);
-            weatherMain = weather.getString("main");
-            // todo also consider description
-            //weather.getString("description");
+    public static WeatherStation getWeatherStationFromJSONObject(JSONObject json) {
+        try {
+            String stationName = json.getString("name");
+            JSONObject coord = json.getJSONObject("coord");
+            Double stationLat = coord.getDouble("lat");
+            Double stationLng = coord.getDouble("lon");
 
-        }catch (JSONException e){
-            throw new RuntimeException(e);
+            WeatherStation station = new WeatherStation(stationName, stationLat, stationLng);
+            return station;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
         }
-
-        return weatherMain;
     }
-
 }
