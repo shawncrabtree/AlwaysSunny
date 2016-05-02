@@ -5,6 +5,7 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -13,6 +14,7 @@ import android.location.Address;
 
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
@@ -68,14 +70,7 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
     @Override
     public void onMapReady(GoogleMap gmap) {
         map = gmap;
-        LatLng currentLoc = new LatLng(address.getLatitude(), address.getLongitude());
 
-        map.setMyLocationEnabled(true);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLoc, 13));
-
-        map.addMarker(new MarkerOptions()
-                .title(address.getLocality())
-                .position(currentLoc));
     }
 
     private class getWeatherData extends AsyncTask<Double, String, ArrayList<WeatherStation>>
@@ -113,14 +108,33 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
 
         @Override
         protected void onPostExecute(ArrayList<WeatherStation> stations) {
+            LatLng currentLoc = new LatLng(address.getLatitude(), address.getLongitude());
+
+            map.setMyLocationEnabled(true);
+            map.addMarker(new MarkerOptions()
+                    .title(address.getLocality())
+                    .position(currentLoc));
+
+            ArrayList<LatLng> stationlatlongs = new ArrayList<LatLng>();
             if(stations.size() >= 3){
                 for(int i = 0; i < 3; i++){
                     WeatherStation station = stations.get(i);
                     LatLng stationlatlong = new LatLng(station.latitude, station.longitude);
                     map.addMarker(new MarkerOptions()
+                            .title(station.stationName)
                             .position(stationlatlong));
+                    stationlatlongs.add(stationlatlong);
                 }
             }
+
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (LatLng stationll : stationlatlongs) {
+                builder.include(stationll);
+            }
+            LatLngBounds bounds = builder.build();
+            int padding = 200; // offset from edges of the map in pixels
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            map.moveCamera(cu);
         }
     }
 
