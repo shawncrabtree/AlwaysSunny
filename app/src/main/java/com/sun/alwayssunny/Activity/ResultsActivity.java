@@ -134,7 +134,7 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
             LatLngBounds bounds = builder.build();
             int padding = 200; // offset from edges of the map in pixels
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            map.moveCamera(cu);
+            map.animateCamera(cu);
         }
     }
 
