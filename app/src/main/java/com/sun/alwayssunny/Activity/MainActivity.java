@@ -2,8 +2,10 @@ package com.sun.alwayssunny.Activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Location;
@@ -12,6 +14,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -35,9 +38,11 @@ import java.util.List;
 
 import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
+import com.sun.alwayssunny.Service.SunnyService;
 
-public class MainActivity extends Activity implements LocationListener {
+public class MainActivity extends Activity implements LocationListener, ServiceConnection, SunnyService.Callback {
 
+    private SunnyService service;
     protected LocationManager locationManager;
     protected Handler splashScreenHandler;
     protected Runnable goToLocationList;
@@ -67,12 +72,33 @@ public class MainActivity extends Activity implements LocationListener {
             }
         };
         splashScreenHandler.postDelayed(goToLocationList, 2000);
+
+        // create service that will eventually calculate sunny cities
+        Context app = getApplicationContext();
+        Intent intent = new Intent(app, SunnyService.class);
+        app.startService(intent);
+
+        bindService(intent, this, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        // called when bindService succeeds
+        service = ((SunnyService.SunnyServiceBinder) binder).getService();
+        service.setListener(this);
     }
 
     @Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
+
+        service.FindSunnyCities(lat, lng);
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(this);
@@ -86,6 +112,29 @@ public class MainActivity extends Activity implements LocationListener {
             bt.setText(lat + " " + lng);
             bt.setEnabled(true);
         }
+    }
+
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // let's disconnect from the service; it keeps running, though
+        if (service != null)
+            unbindService(this);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        // called when unbindService succeeds
+        if (service != null)
+            service.setListener(null);
+        service = null;
+    }
+
+    @Override
+    public void onCitiesFound(ArrayList<WeatherStation> stations) {
+
     }
 
     public void GoToCurrentLocation(View v){
@@ -108,12 +157,12 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     public void onProviderEnabled(String provider) {
-        Log.d("Latitude","enable");
+        Log.d("Latitude", "enable");
     }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("Latitude","status");
+        Log.d("Latitude", "status");
     }
 
 

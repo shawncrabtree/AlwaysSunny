@@ -23,6 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Activity.ResultsActivity" />
+        <service android:name=".Service.SunnyService" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCE-8JolqVP8yXVYPIyOI_DtXQy8BuIczE"/>
