@@ -23,7 +23,7 @@ public class WeatherAPI {
     public static String getWeatherStringFromURL(){
         URL url;
         try {
-            url = new URL("http://api.openweathermap.org/data/2.5/box/city?bbox=-124.159764,41.950203,-116.887636,45.763235,100000&cluster=no&units=imperial&appid=2ab91d37d2983284cd0e8a970e078544");
+            url = new URL("http://api.openweathermap.org/data/2.5/box/city?bbox=-130.57,50.44,-59.19,23.14,100000&cluster=no&units=imperial&appid=2ab91d37d2983284cd0e8a970e078544");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

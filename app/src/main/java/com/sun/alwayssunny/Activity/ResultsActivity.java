@@ -28,6 +28,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -77,6 +79,8 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
     {
         @Override
         protected ArrayList<WeatherStation> doInBackground(Double... locations) {
+            final double lat = locations[0];
+            final double lng = locations[1];
             JSONObject reader;
             JSONArray jArray = new JSONArray();
             String jsonString = WeatherAPI.getWeatherStringFromURL();
@@ -102,7 +106,15 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
                 }
             }
 
-            // TODO: Do something with the data retrieved by the async task.
+            Collections.sort(stations, new Comparator<WeatherStation>() {
+                    @Override
+                    public int compare(WeatherStation w1, WeatherStation w2) {
+                        double w1dist = distance(w1.latitude, w1.longitude, lat, lng);
+                        double w2dist = distance(w2.latitude, w2.longitude, lat, lng);
+                        return w1dist > w2dist ? 1 : -1;
+                    }
+                }
+            );
             return stations;
         }
 
@@ -116,6 +128,7 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
                     .position(currentLoc));
 
             ArrayList<LatLng> stationlatlongs = new ArrayList<LatLng>();
+            stationlatlongs.add(currentLoc);
             if(stations.size() >= 3){
                 for(int i = 0; i < 3; i++){
                     WeatherStation station = stations.get(i);
@@ -125,16 +138,31 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
                             .position(stationlatlong));
                     stationlatlongs.add(stationlatlong);
                 }
+
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                for (LatLng stationll : stationlatlongs) {
+                    builder.include(stationll);
+                }
+                LatLngBounds bounds = builder.build();
+                int padding = 200; // offset from edges of the map in pixels
+                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                map.animateCamera(cu);
             }
 
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            for (LatLng stationll : stationlatlongs) {
-                builder.include(stationll);
-            }
-            LatLngBounds bounds = builder.build();
-            int padding = 200; // offset from edges of the map in pixels
-            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            map.animateCamera(cu);
+
+        }
+
+        public double distance(double lat1, double lng1, double lat2, double lng2) {
+            double earthRadius = 6371000; //meters
+            double dLat = Math.toRadians(lat2-lat1);
+            double dLng = Math.toRadians(lng2-lng1);
+            double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                            Math.sin(dLng/2) * Math.sin(dLng/2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            double dist = earthRadius * c;
+
+            return dist;
         }
     }
 
