@@ -20,7 +20,11 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sun.alwayssunny.R;
@@ -50,6 +54,8 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     double lat;
     double lng;
 
+    private List<Loc> prevLoc = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +74,8 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
             @Override
             public void run() {
                 setContentView(R.layout.locations_view);
+                populatePrevLocations();
+                populateListView();
                 isLocationsView = true;
             }
         };
@@ -80,6 +88,43 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
 
         bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
+
+//*****************************************************************
+//** Below needed for ListView stuff **
+//*****************************************************************
+    private void populatePrevLocations() {
+        prevLoc.add(new Loc("Prev Location 1"));
+        prevLoc.add(new Loc("Prev Location 2"));
+        prevLoc.add(new Loc("Prev Location 3"));
+    }
+
+    private void populateListView() {
+        ArrayAdapter<Loc> locAdapter = new PrevLocAdapter();
+        ListView list = (ListView)findViewById(R.id.prevListView);
+        list.setAdapter(locAdapter);
+    }
+
+    private class PrevLocAdapter extends ArrayAdapter<Loc> {
+        public PrevLocAdapter() {
+            super(MainActivity.this, R.layout.locations_view, prevLoc);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent){
+            View itemView = convertView;
+            if(itemView == null){
+                itemView = getLayoutInflater().inflate(R.layout.locations_view, parent, false);
+            }
+
+            Loc currPrevLoc = prevLoc.get(position);
+
+            TextView PrevLocText = (TextView)itemView.findViewById(R.id.prevTextView);
+            PrevLocText.setText(currPrevLoc.getLocName());
+
+            return itemView;
+        }
+    }
+//*****************************************************************
 
     @Override
     protected void onStart() {
@@ -113,8 +158,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
             bt.setEnabled(true);
         }
     }
-
-
 
     @Override
     protected void onStop() {
@@ -164,6 +207,5 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     public void onStatusChanged(String provider, int status, Bundle extras) {
         Log.d("Latitude", "status");
     }
-
 
 }
