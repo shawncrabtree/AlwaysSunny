@@ -11,6 +11,7 @@ public class Loc {
     public Loc (String locName){
         super();
         this.locName = locName;
+
     }
 
     public String getLocName(){

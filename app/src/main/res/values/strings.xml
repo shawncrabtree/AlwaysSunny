@@ -4,4 +4,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="your_location">Waiting on your location...</string>
+    <string name="previous_locations">Previous Locations</string>
+    <string name="previous_locations_found">Previous Locations Found:</string>
 </resources>
