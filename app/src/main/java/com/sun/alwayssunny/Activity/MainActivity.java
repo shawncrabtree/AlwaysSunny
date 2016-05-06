@@ -113,12 +113,12 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         public View getView(int position, View convertView, ViewGroup parent){
             View itemView = convertView;
             if(itemView == null){
-                itemView = getLayoutInflater().inflate(R.layout.locations_view, parent, false);
+                itemView = getLayoutInflater().inflate(R.layout.location_item, parent, false);
             }
 
             Loc currPrevLoc = prevLoc.get(position);
 
-            TextView PrevLocText = (TextView)itemView.findViewById(R.id.prevTextView);
+            TextView PrevLocText = (TextView)itemView.findViewById(R.id.locInfo);
             PrevLocText.setText(currPrevLoc.getLocName());
 
             return itemView;
