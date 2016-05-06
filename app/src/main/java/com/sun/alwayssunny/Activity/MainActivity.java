@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -39,6 +40,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
@@ -53,6 +55,7 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     protected boolean isLocationsView;
     double lat;
     double lng;
+    public String city, state, country;
 
     private List<Loc> prevLoc = new ArrayList<>();
 
@@ -143,6 +146,20 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         lat = location.getLatitude();
         lng = location.getLongitude();
 
+        Geocoder gcd1 = new Geocoder(getApplicationContext(), Locale.getDefault());
+
+        List<Address> addresses;
+        try{
+            addresses = gcd1.getFromLocation(lat, lng, 1);
+            if(addresses.size() > 0){
+                //city = addresses.get(0).getAddressLine(0);
+                state = addresses.get(0).getAddressLine(1);
+                country = addresses.get(0).getAddressLine(2);
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+
         service.FindSunnyCities(lat, lng);
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -154,7 +171,8 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         }
         else{
             Button bt = (Button) findViewById(R.id.currentLocation);
-            bt.setText(lat + " " + lng);
+            //bt.setText(lat + " " + lng + "\n" + city + ", " + state + ", " + country);
+            bt.setText(state + ", " + country);
             bt.setEnabled(true);
         }
     }
