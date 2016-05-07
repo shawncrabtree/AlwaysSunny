@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -33,7 +34,7 @@ import java.util.Locale;
  */
 public class SunnyService extends Service {
 
-    public ArrayList<WeatherStation> foundStations = null;
+    public ArrayList<WeatherStation> sunnyStations = null;
     public double lat;
     public double lng;
     public Address address;
@@ -53,7 +54,7 @@ public class SunnyService extends Service {
 
     /*** Specify a means for the activity to receive measurements back ***/
     public interface Callback {
-        public void onCitiesFound(ArrayList<WeatherStation> stations);
+        void onCitiesFound(ArrayList<WeatherStation> stations);
     }
 
     private Callback callback;
@@ -101,11 +102,11 @@ public class SunnyService extends Service {
                 try {
                     JSONObject jObj = jArray.getJSONObject(i);
                     int cloudLevel = jObj.getJSONObject("clouds").getInt("all");
-                    if (cloudLevel == 0) {
+                    int weatherId = jObj.getJSONArray("weather").getJSONObject(0).getInt("id");
+                    if (cloudLevel == 0 && weatherId == 800) {
                         WeatherStation station = WeatherAPI.getWeatherStationFromJSONObject(jObj);
                         stations.add(station);
                     }
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -125,8 +126,8 @@ public class SunnyService extends Service {
 
         @Override
         protected void onPostExecute(ArrayList<WeatherStation> stations) {
-            SunnyService.this.foundStations = stations;
-            callback.onCitiesFound(foundStations);
+            SunnyService.this.sunnyStations = stations;
+            callback.onCitiesFound(sunnyStations);
         }
 
         public double distance(double lat1, double lng1, double lat2, double lng2) {
@@ -137,9 +138,7 @@ public class SunnyService extends Service {
                     Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
                             Math.sin(dLng/2) * Math.sin(dLng/2);
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            double dist = earthRadius * c;
-
-            return dist;
+            return earthRadius * c;
         }
     }
 

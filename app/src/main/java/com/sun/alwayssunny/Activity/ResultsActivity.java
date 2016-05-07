@@ -75,6 +75,12 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
+    }
+
+    @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
         // called when bindService succeeds
         service = ((SunnyService.SunnyServiceBinder) binder).getService();
@@ -87,19 +93,20 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
     @Override
     public void onMapReady(GoogleMap gmap) {
         map = gmap;
-        if(service != null && service.foundStations != null){
-            onCitiesFound(service.foundStations);
+        if(service != null && service.sunnyStations != null){
+            onCitiesFound(service.sunnyStations);
         }
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        // let's disconnect from the service; it keeps running, though
+    protected void onDestroy() {
+        super.onDestroy();
+        disconnectService();
+    }
+
+    private void disconnectService(){
         if (service != null){
-            Context app = getApplicationContext();
-            Intent intent = new Intent(app, SunnyService.class);
-            stopService(intent);
+            unbindService(this);
         }
     }
 
@@ -114,14 +121,9 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
     @Override
     public void onCitiesFound(ArrayList<WeatherStation> stations) {
         LatLng currentLoc = new LatLng(lat, lng);
-
         map.setMyLocationEnabled(true);
-        map.addMarker(new MarkerOptions()
-                .title(service.address.getLocality())
-                .position(currentLoc));
 
         ArrayList<LatLng> stationlatlongs = new ArrayList<LatLng>();
-        stationlatlongs.add(currentLoc);
         if (stations.size() >= 3) {
             for (int i = 0; i < 3; i++) {
                 WeatherStation station = stations.get(i);
@@ -131,6 +133,7 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
                         .position(stationlatlong));
                 stationlatlongs.add(stationlatlong);
             }
+            stationlatlongs.add(currentLoc);
 
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             for (LatLng stationll : stationlatlongs) {

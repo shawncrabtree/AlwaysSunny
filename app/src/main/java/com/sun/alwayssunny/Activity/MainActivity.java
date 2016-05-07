@@ -80,9 +80,10 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
                 populatePrevLocations();
                 populateListView();
                 isLocationsView = true;
+                foundLocation();
             }
         };
-        splashScreenHandler.postDelayed(goToLocationList, 2000);
+        splashScreenHandler.postDelayed(goToLocationList, 1500);
 
         // create service that will eventually calculate sunny cities
         Context app = getApplicationContext();
@@ -166,10 +167,11 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
             locationManager.removeUpdates(this);
         }
 
-        if(!isLocationsView){
-            GoToCurrentLocation();
-        }
-        else{
+        foundLocation();
+    }
+
+    public void foundLocation(){
+        if(isLocationsView && state != null && country != null){
             Button bt = (Button) findViewById(R.id.currentLocation);
             //bt.setText(lat + " " + lng + "\n" + city + ", " + state + ", " + country);
             bt.setText(state + ", " + country);
@@ -178,8 +180,8 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
         // let's disconnect from the service; it keeps running, though
         if (service != null)
             unbindService(this);
@@ -207,7 +209,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         intent.putExtra("lat", lat);
         intent.putExtra("lng", lng);
         this.startActivity(intent);
-        this.finish();
         splashScreenHandler.removeCallbacks(goToLocationList);
     }
 
