@@ -10,6 +10,8 @@ public class WeatherStation {
     public Double latitude;
     public Double longitude;
 
+    public WeatherStation() {}
+
     public WeatherStation(String name, Location lctn) {
         this.stationName = name;
         this.latitude = lctn.getLatitude();
