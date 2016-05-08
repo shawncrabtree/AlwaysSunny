@@ -3,6 +3,7 @@ package com.sun.alwayssunny.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
 
@@ -19,13 +20,14 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
     private static final String TYPE_REAL = " REAL";
     private static final String SQL_CREATE_TABLE =
             ("CREATE TABLE " + DB_LocationContract.LocationEntry.TABLE_NAME + "(" +
-                    DB_LocationContract.LocationEntry.COLUMN_CITY + TYPE_TEXT + "UNIQUE, " +
+                    DB_LocationContract.LocationEntry._ID + " INTEGER PRIMARY KEY , " +
+                    DB_LocationContract.LocationEntry.COLUMN_CITY + TYPE_TEXT + " UNIQUE, " +
                     DB_LocationContract.LocationEntry.COLUMN_LAT + TYPE_REAL + ", " +
                     DB_LocationContract.LocationEntry.COLUMN_LONG + TYPE_REAL + ")");
 
     public DB_LocationHelper (Context context) {
         super(context, DB_LocationContract.LocationDB.DATABASE_NAME,
-              null, DB_LocationContract.LocationDB.DATABASE_VERSION);
+                null, DB_LocationContract.LocationDB.DATABASE_VERSION);
     }
 
     @Override
@@ -45,26 +47,20 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
      *         lng - the longitude of the place
      * returns: true if successful, otherwise false.
      */
-    public boolean insertLocation(SQLiteDatabase db,String city, Double lat, Double lng) {
-
+    public boolean insertLocation(String city, Double lat, Double lng) {
+        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(DB_LocationContract.LocationEntry.COLUMN_CITY, city);
         contentValues.put(DB_LocationContract.LocationEntry.COLUMN_LAT, lat);
         contentValues.put(DB_LocationContract.LocationEntry.COLUMN_LONG, lng);
 
-        Long newColumnID =
-                db.insert(DB_LocationContract.LocationEntry.TABLE_NAME, null, contentValues);
-
-        if (newColumnID == -1) {
-            return false;
+        try{
+            db.insert(DB_LocationContract.LocationEntry.TABLE_NAME, null, contentValues);
         }
-        return true;
-    }
+        catch(SQLiteDatabaseCorruptException e){}
 
-    public boolean insertLocation(String city, Double lat, Double lng) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        return insertLocation(db, city, lat, lng);
+        return true;
     }
 
     /*
@@ -96,13 +92,11 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
                 null,                                           // The values for the WHERE clause
                 null,                                           // don't group the rows
                 null,                                           // don't filter by row groups
-                sortOrder,                                      // The sort order
-                String.valueOf(numStations)                     // Limit the number of stations
+                sortOrder                                      // The sort order
+              //  String.valueOf(numStations)                     // Limit the number of stations
         );
 
-        // Iterate through the query, place into list of objects.
-        c.moveToFirst();
-        for (int i = 0; i < c.getCount(); i++) {
+        while (c.moveToNext()) {
             station = new WeatherStation();
             station.stationName = c.getString(
                     c.getColumnIndexOrThrow(DB_LocationContract.LocationEntry.COLUMN_CITY));
