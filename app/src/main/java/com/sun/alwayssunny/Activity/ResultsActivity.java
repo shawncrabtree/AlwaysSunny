@@ -47,7 +47,6 @@ import java.util.Locale;
 public class ResultsActivity extends FragmentActivity implements OnMapReadyCallback, ServiceConnection, SunnyService.Callback {
 
     private SunnyService service;
-    protected Address address;
     protected GoogleMap map;
     protected double lat;
     protected double lng;
@@ -123,6 +122,16 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
         LatLng currentLoc = new LatLng(lat, lng);
         map.setMyLocationEnabled(true);
 
+        Collections.sort(stations, new Comparator<WeatherStation>() {
+                    @Override
+                    public int compare(WeatherStation w1, WeatherStation w2) {
+                        double w1dist = distance(w1.latitude, w1.longitude, lat, lng);
+                        double w2dist = distance(w2.latitude, w2.longitude, lat, lng);
+                        return w1dist > w2dist ? 1 : -1;
+                    }
+                }
+        );
+
         ArrayList<LatLng> stationlatlongs = new ArrayList<LatLng>();
         if (stations.size() >= 3) {
             for (int i = 0; i < 3; i++) {
@@ -145,5 +154,16 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
             map.animateCamera(cu);
         }
 
+    }
+
+    public double distance(double lat1, double lng1, double lat2, double lng2) {
+        double earthRadius = 6371000; //meters
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLng = Math.toRadians(lng2-lng1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return earthRadius * c;
     }
 }

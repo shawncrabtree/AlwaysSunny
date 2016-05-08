@@ -19,7 +19,7 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
     private static final String TYPE_REAL = " REAL";
     private static final String SQL_CREATE_TABLE =
             ("CREATE TABLE " + DB_LocationContract.LocationEntry.TABLE_NAME + "(" +
-                    DB_LocationContract.LocationEntry._ID + "INTEGER PRIMARY KEY , " +
+                   // DB_LocationContract.LocationEntry._ID + "INTEGER PRIMARY KEY , " +
                    DB_LocationContract.LocationEntry.COLUMN_CITY + TYPE_TEXT + ", " +
                     DB_LocationContract.LocationEntry.COLUMN_LAT + TYPE_REAL + ", " +
                     DB_LocationContract.LocationEntry.COLUMN_LONG + TYPE_REAL + ")");
@@ -46,8 +46,8 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
      *         lng - the longitude of the place
      * returns: true if successful, otherwise false.
      */
-    public boolean insertLocation(String city, Double lat, Double lng) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    public boolean insertLocation(SQLiteDatabase db,String city, Double lat, Double lng) {
+
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(DB_LocationContract.LocationEntry.COLUMN_CITY, city);
@@ -60,6 +60,11 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
             return false;
         }
         return true;
+    }
+
+    public boolean insertLocation(String city, Double lat, Double lng) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return insertLocation(db, city, lat, lng);
     }
 
     /*

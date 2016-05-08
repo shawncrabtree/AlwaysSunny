@@ -139,10 +139,17 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
                 itemView = getLayoutInflater().inflate(R.layout.location_item, parent, false);
             }
 
-            WeatherStation currPrevLoc = prevLoc.get(position);
+            final WeatherStation currPrevLoc = prevLoc.get(position);
 
             TextView PrevLocText = (TextView)itemView.findViewById(R.id.locInfo);
             PrevLocText.setText(currPrevLoc.getStationName());
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    GoToLocation(currPrevLoc.getLat(), currPrevLoc.getLat());
+                }
+            });
 
             return itemView;
         }
@@ -157,6 +164,7 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         // called when bindService succeeds
         service = ((SunnyService.SunnyServiceBinder) binder).getService();
         service.setListener(this);
+        service.FindSunnyCities();
     }
 
     @Override
@@ -177,8 +185,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         } catch(IOException e) {
             e.printStackTrace();
         }
-
-        service.FindSunnyCities(lat, lng);
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(this);
@@ -219,18 +225,18 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     }
 
     public void GoToCurrentLocation(View v){
-        GoToCurrentLocation();
+        GoToLocation(lat, lng);
     }
 
-    public void GoToCurrentLocation(){
+    public void GoToLocation(double gotolat, double gotolng){
 
         // insertLocation(string city, double lat, double lng)
         // Insert the latest city into our list
-        dbHelper.insertLocation(state, lat, lng);
+        dbHelper.insertLocation(state, gotolat, gotolng);
 
         final Intent intent = new Intent(this, ResultsActivity.class);
-        intent.putExtra("lat", lat);
-        intent.putExtra("lng", lng);
+        intent.putExtra("lat", gotolat);
+        intent.putExtra("lng", gotolng);
         this.startActivity(intent);
         splashScreenHandler.removeCallbacks(goToLocationList);
     }

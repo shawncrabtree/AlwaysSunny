@@ -63,8 +63,8 @@ public class SunnyService extends Service {
         this.callback = callback;
     }
 
-    public void FindSunnyCities(double lat, double lng){
-        new GetSunnyCities().execute(lat, lng);
+    public void FindSunnyCities(){
+        new GetSunnyCities().execute();
     }
 
 
@@ -72,20 +72,6 @@ public class SunnyService extends Service {
     {
         @Override
         protected ArrayList<WeatherStation> doInBackground(Double... locations) {
-            lat = locations[0];
-            lng = locations[1];
-
-            Geocoder gcd = new Geocoder(getApplicationContext(), Locale.getDefault());
-            List<Address> addresses = null;
-            try {
-                addresses = gcd.getFromLocation(lat, lng, 1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if (addresses != null && addresses.size() > 0){
-                address = addresses.get(0);
-            }
 
             JSONObject reader;
             JSONArray jArray = new JSONArray();
@@ -112,15 +98,6 @@ public class SunnyService extends Service {
                 }
             }
 
-            Collections.sort(stations, new Comparator<WeatherStation>() {
-                        @Override
-                        public int compare(WeatherStation w1, WeatherStation w2) {
-                            double w1dist = distance(w1.latitude, w1.longitude, lat, lng);
-                            double w2dist = distance(w2.latitude, w2.longitude, lat, lng);
-                            return w1dist > w2dist ? 1 : -1;
-                        }
-                    }
-            );
             return stations;
         }
 
@@ -130,16 +107,7 @@ public class SunnyService extends Service {
             callback.onCitiesFound(sunnyStations);
         }
 
-        public double distance(double lat1, double lng1, double lat2, double lng2) {
-            double earthRadius = 6371000; //meters
-            double dLat = Math.toRadians(lat2-lat1);
-            double dLng = Math.toRadians(lng2-lng1);
-            double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                            Math.sin(dLng/2) * Math.sin(dLng/2);
-            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return earthRadius * c;
-        }
+
     }
 
 
