@@ -150,8 +150,13 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
             }
             LatLngBounds bounds = builder.build();
             int padding = 200; // offset from edges of the map in pixels
-            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            map.animateCamera(cu);
+            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                @Override
+                public void onMapLoaded() {
+                    map.animateCamera(cu);
+                }
+            });
         }
 
     }

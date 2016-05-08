@@ -92,8 +92,8 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
                 null,                                           // The values for the WHERE clause
                 null,                                           // don't group the rows
                 null,                                           // don't filter by row groups
-                sortOrder                                      // The sort order
-              //  String.valueOf(numStations)                     // Limit the number of stations
+                sortOrder,                                      // The sort order
+                String.valueOf(numStations)                     // Limit the number of stations
         );
 
         while (c.moveToNext()) {
