@@ -19,6 +19,5 @@ public final class DB_LocationContract {
         public static final String COLUMN_CITY = "city";
         public static final String COLUMN_LAT = "lat";
         public static final String COLUMN_LONG = "long";
-        public static final String _ID = "1";
     }
 }

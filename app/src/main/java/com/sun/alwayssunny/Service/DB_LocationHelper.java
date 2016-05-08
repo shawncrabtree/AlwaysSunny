@@ -19,8 +19,8 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
     private static final String TYPE_REAL = " REAL";
     private static final String SQL_CREATE_TABLE =
             ("CREATE TABLE " + DB_LocationContract.LocationEntry.TABLE_NAME + "(" +
-                    DB_LocationContract.LocationEntry._ID + "INTEGER PRIMARY KEY , " +
-                   DB_LocationContract.LocationEntry.COLUMN_CITY + TYPE_TEXT + ", " +
+                    DB_LocationContract.LocationEntry._ID + " INTEGER PRIMARY KEY , " +
+                    DB_LocationContract.LocationEntry.COLUMN_CITY + TYPE_TEXT + "UNIQUE, " +
                     DB_LocationContract.LocationEntry.COLUMN_LAT + TYPE_REAL + ", " +
                     DB_LocationContract.LocationEntry.COLUMN_LONG + TYPE_REAL + ")");
 
@@ -53,6 +53,7 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
         contentValues.put(DB_LocationContract.LocationEntry.COLUMN_CITY, city);
         contentValues.put(DB_LocationContract.LocationEntry.COLUMN_LAT, lat);
         contentValues.put(DB_LocationContract.LocationEntry.COLUMN_LONG, lng);
+
         Long newColumnID =
                 db.insert(DB_LocationContract.LocationEntry.TABLE_NAME, null, contentValues);
 

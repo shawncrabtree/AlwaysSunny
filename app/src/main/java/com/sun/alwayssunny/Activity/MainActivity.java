@@ -102,8 +102,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         // That way we don't cause leakage problems
         Context app1 = getApplicationContext();
         dbHelper = new DB_LocationHelper(app1);
-        Intent intent1 = new Intent(app1, DB_LocationHelper.class);
-        app1.startService(intent1);
 
     }
 
@@ -111,19 +109,13 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
 //** Below needed for ListView stuff **
 //*****************************************************************
     private void populatePrevLocations() {
-        //prevLoc.add(new WeatherStation("Prev Location 1", 123.1, 123.4));
-        //prevLoc.add(new WeatherStation("Prev Location 2", 633.136, 34.16));
-        //prevLoc.add(new WeatherStation("Prev Location 3", -42.1, 52.163));
-
-        prevLoc = dbHelper.selectLatestLocations(5);
+        prevLoc = dbHelper.selectLatestLocations(10);
     }
 
     private void populateListView() {
         ArrayAdapter<WeatherStation> locAdapter = new PrevLocAdapter();
         ListView list = (ListView)findViewById(R.id.prevListView);
         list.setAdapter(locAdapter);
-
-
     }
 
     private class PrevLocAdapter extends ArrayAdapter<WeatherStation> {
