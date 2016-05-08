@@ -18,11 +18,11 @@ public class DB_LocationHelper extends SQLiteOpenHelper {
     private static final String TYPE_TEXT = " TEXT";
     private static final String TYPE_REAL = " REAL";
     private static final String SQL_CREATE_TABLE =
-            "CREATE TABLE" + DB_LocationContract.LocationEntry.TABLE_NAME + "(" +
-                    DB_LocationContract.LocationEntry._ID + "INTEGER PRIMARY KEY," +
-                    DB_LocationContract.LocationEntry.COLUMN_CITY + TYPE_TEXT + "," +
-                    DB_LocationContract.LocationEntry.COLUMN_LAT + TYPE_REAL + "," +
-                    DB_LocationContract.LocationEntry.COLUMN_LONG + TYPE_REAL + ")";
+            ("CREATE TABLE " + DB_LocationContract.LocationEntry.TABLE_NAME + "(" +
+                    DB_LocationContract.LocationEntry._ID + "INTEGER PRIMARY KEY , " +
+                   DB_LocationContract.LocationEntry.COLUMN_CITY + TYPE_TEXT + ", " +
+                    DB_LocationContract.LocationEntry.COLUMN_LAT + TYPE_REAL + ", " +
+                    DB_LocationContract.LocationEntry.COLUMN_LONG + TYPE_REAL + ")");
 
     public DB_LocationHelper (Context context) {
         super(context, DB_LocationContract.LocationDB.DATABASE_NAME,
