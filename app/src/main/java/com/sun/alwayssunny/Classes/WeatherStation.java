@@ -2,6 +2,8 @@ package com.sun.alwayssunny.Classes;
 
 import android.location.Location;
 
+import java.util.List;
+
 /**
  * Created by brett on 5/1/2016.
  */
@@ -9,6 +11,10 @@ public class WeatherStation {
     public String stationName;
     public Double latitude;
     public Double longitude;
+
+    public WeatherStation(List<WeatherStation> weatherStations) {}
+
+    public WeatherStation() {}
 
     public WeatherStation(String name, Location lctn) {
         this.stationName = name;
@@ -27,4 +33,10 @@ public class WeatherStation {
         this.latitude = Double.parseDouble(lat);
         this.longitude = Double.parseDouble(lng);
     }
+
+    public String getStationName() { return this.stationName; }
+
+    public Double getLat() { return this.latitude; }
+
+    public Double getLng() { return this.longitude; }
 }

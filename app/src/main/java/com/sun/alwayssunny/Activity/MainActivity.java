@@ -6,7 +6,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -18,6 +20,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -44,6 +47,7 @@ import java.util.Locale;
 
 import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
+import com.sun.alwayssunny.Service.DB_LocationHelper;
 import com.sun.alwayssunny.Service.SunnyService;
 
 public class MainActivity extends Activity implements LocationListener, ServiceConnection, SunnyService.Callback {
@@ -57,7 +61,10 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     double lng;
     public String city, state, country;
 
-    private List<Loc> prevLoc = new ArrayList<>();
+    private List<WeatherStation> prevLoc = new ArrayList<>();
+    public DB_LocationHelper dbHelper;
+    public WeatherStation stations;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,24 +98,36 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         app.startService(intent);
 
         bindService(intent, this, Context.BIND_AUTO_CREATE);
+
+        // Need to create another context object
+        // That way we don't cause leakage problems
+        Context app1 = getApplicationContext();
+        dbHelper = new DB_LocationHelper(app1);
+        Intent intent1 = new Intent(app1, DB_LocationHelper.class);
+        app1.startService(intent1);
+
     }
 
 //*****************************************************************
 //** Below needed for ListView stuff **
 //*****************************************************************
     private void populatePrevLocations() {
-        prevLoc.add(new Loc("Prev Location 1"));
-        prevLoc.add(new Loc("Prev Location 2"));
-        prevLoc.add(new Loc("Prev Location 3"));
+        //prevLoc.add(new WeatherStation("Prev Location 1", 123.1, 123.4));
+        //prevLoc.add(new WeatherStation("Prev Location 2", 633.136, 34.16));
+        //prevLoc.add(new WeatherStation("Prev Location 3", -42.1, 52.163));
+
+        prevLoc = dbHelper.selectLatestLocations(5);
     }
 
     private void populateListView() {
-        ArrayAdapter<Loc> locAdapter = new PrevLocAdapter();
+        ArrayAdapter<WeatherStation> locAdapter = new PrevLocAdapter();
         ListView list = (ListView)findViewById(R.id.prevListView);
         list.setAdapter(locAdapter);
+
+
     }
 
-    private class PrevLocAdapter extends ArrayAdapter<Loc> {
+    private class PrevLocAdapter extends ArrayAdapter<WeatherStation> {
         public PrevLocAdapter() {
             super(MainActivity.this, R.layout.locations_view, prevLoc);
         }
@@ -120,10 +139,10 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
                 itemView = getLayoutInflater().inflate(R.layout.location_item, parent, false);
             }
 
-            Loc currPrevLoc = prevLoc.get(position);
+            WeatherStation currPrevLoc = prevLoc.get(position);
 
             TextView PrevLocText = (TextView)itemView.findViewById(R.id.locInfo);
-            PrevLocText.setText(currPrevLoc.getLocName());
+            PrevLocText.setText(currPrevLoc.getStationName());
 
             return itemView;
         }
@@ -131,9 +150,7 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
 //*****************************************************************
 
     @Override
-    protected void onStart() {
-        super.onStart();
-    }
+    protected void onStart() { super.onStart(); }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -185,6 +202,7 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         // let's disconnect from the service; it keeps running, though
         if (service != null)
             unbindService(this);
+
     }
 
     @Override
@@ -205,6 +223,11 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     }
 
     public void GoToCurrentLocation(){
+
+        // insertLocation(string city, double lat, double lng)
+        // Insert the latest city into our list
+        dbHelper.insertLocation(state, lat, lng);
+
         final Intent intent = new Intent(this, ResultsActivity.class);
         intent.putExtra("lat", lat);
         intent.putExtra("lng", lng);
