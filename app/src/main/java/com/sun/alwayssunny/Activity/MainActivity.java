@@ -147,7 +147,7 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    GoToLocation(currPrevLoc.getLat(), currPrevLoc.getLat());
+                    GoToLocation(currPrevLoc.getLat(), currPrevLoc.getLng());
                 }
             });
 
@@ -190,6 +190,11 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
             locationManager.removeUpdates(this);
         }
 
+
+        // insertLocation(string city, double lat, double lng)
+        // Insert the latest city into our list
+        dbHelper.insertLocation(state, lat, lng);
+
         foundLocation();
     }
 
@@ -229,11 +234,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     }
 
     public void GoToLocation(double gotolat, double gotolng){
-
-        // insertLocation(string city, double lat, double lng)
-        // Insert the latest city into our list
-        dbHelper.insertLocation(state, gotolat, gotolng);
-
         final Intent intent = new Intent(this, ResultsActivity.class);
         intent.putExtra("lat", gotolat);
         intent.putExtra("lng", gotolng);
