@@ -3,18 +3,11 @@ package com.sun.alwayssunny.Service;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Address;
-import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
 
@@ -22,12 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by Shawn on 5/3/2016.
@@ -72,13 +60,10 @@ public class SunnyService extends Service {
     {
         @Override
         protected ArrayList<WeatherStation> doInBackground(Double... locations) {
-
-            JSONObject reader;
-            JSONArray jArray = new JSONArray();
             String jsonString = WeatherAPI.getWeatherStringFromURL();
+            JSONArray jArray = new JSONArray();
             try {
-                reader = new JSONObject(jsonString);
-                jArray = reader.getJSONArray("list");
+                jArray = new JSONArray(jsonString);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -87,12 +72,8 @@ public class SunnyService extends Service {
             for(int i = 0; i < jArray.length(); i++) {
                 try {
                     JSONObject jObj = jArray.getJSONObject(i);
-                    int cloudLevel = jObj.getJSONObject("clouds").getInt("all");
-                    int weatherId = jObj.getJSONArray("weather").getJSONObject(0).getInt("id");
-                    if (cloudLevel == 0 && weatherId == 800) {
-                        WeatherStation station = WeatherAPI.getWeatherStationFromJSONObject(jObj);
-                        stations.add(station);
-                    }
+                    WeatherStation station = WeatherAPI.getWeatherStationFromJSONObject(jObj);
+                    stations.add(station);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

@@ -1,10 +1,5 @@
 package com.sun.alwayssunny.API;
 
-import android.location.Address;
-import android.location.Location;
-import android.os.AsyncTask;
-
-import com.sun.alwayssunny.Activity.MainActivity;
 import com.sun.alwayssunny.Classes.WeatherStation;
 
 import org.json.JSONException;
@@ -23,7 +18,7 @@ public class WeatherAPI {
     public static String getWeatherStringFromURL(){
         URL url;
         try {
-            url = new URL("http://api.openweathermap.org/data/2.5/box/city?bbox=-130.57,50.44,-59.19,23.14,100000&cluster=no&units=imperial&appid=2ab91d37d2983284cd0e8a970e078544");
+            url = new URL("http://1-dot-alwayscloudy-1328.appspot.com/alwayssunny");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -50,12 +45,9 @@ public class WeatherAPI {
     public static WeatherStation getWeatherStationFromJSONObject(JSONObject json) {
         try {
             String stationName = json.getString("name");
-            JSONObject coord = json.getJSONObject("coord");
-            Double stationLat = coord.getDouble("lat");
-            Double stationLng = coord.getDouble("lon");
-
-            WeatherStation station = new WeatherStation(stationName, stationLat, stationLng);
-            return station;
+            Double stationLat = json.getDouble("lat");
+            Double stationLng = json.getDouble("lon");
+            return new WeatherStation(stationName, stationLat, stationLng);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
