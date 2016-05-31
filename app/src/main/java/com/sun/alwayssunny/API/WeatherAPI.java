@@ -46,7 +46,7 @@ public class WeatherAPI {
         try {
             String stationName = json.getString("name");
             Double stationLat = json.getDouble("lat");
-            Double stationLng = json.getDouble("lon");
+            Double stationLng = json.getDouble("lng");
             return new WeatherStation(stationName, stationLat, stationLng);
         } catch (JSONException e) {
             e.printStackTrace();
