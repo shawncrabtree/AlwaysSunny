@@ -21,6 +21,8 @@ import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -49,6 +51,8 @@ import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
 import com.sun.alwayssunny.Service.DB_LocationHelper;
 import com.sun.alwayssunny.Service.SunnyService;
+
+import static com.sun.alwayssunny.R.id.locInfo;
 
 public class MainActivity extends Activity implements LocationListener, ServiceConnection, SunnyService.Callback {
 
@@ -133,8 +137,15 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
 
             final WeatherStation currPrevLoc = prevLoc.get(position);
 
-            TextView PrevLocText = (TextView)itemView.findViewById(R.id.locInfo);
+
+//            Button bt = (Button) findViewById(locInfo);
+//            bt.setText(state + ", " + country);
+//            bt.setEnabled(true);
+
+            TextView PrevLocText = (TextView)itemView.findViewById(locInfo);
             PrevLocText.setText(currPrevLoc.getStationName());
+
+            itemView.setBackgroundResource(R.drawable.textviewbtn);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
