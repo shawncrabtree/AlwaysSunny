@@ -1,6 +1,7 @@
 package com.sun.alwayssunny.API;
 
 import com.sun.alwayssunny.Classes.WeatherStation;
+import com.sun.alwayssunny.Service.HttpGet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,28 +16,17 @@ import java.net.URL;
  */
 public class WeatherAPI {
 
-    public static String getWeatherStringFromURL(){
+    public static String getWeatherStringFromURL(Double lat, Double lng) throws Exception {
         URL url;
+        HttpGet getter = new HttpGet("http://1-dot-alwayscloudy-1328.appspot.com/alwayssunny", "UTF-16");
+        getter.addFormFieldSecure("lat", lat.toString());
+        getter.addFormFieldSecure("lng", lng.toString());
+
+        String jsonString = null;
         try {
-            url = new URL("http://1-dot-alwayscloudy-1328.appspot.com/alwayssunny");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        String jsonString = "";
-        try {
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(
-                            url.openStream()));
-
-            String inputLine;
-
-            while ((inputLine = in.readLine()) != null)
-                jsonString += inputLine;
-
-            in.close();
-        } catch (IOException e){
-            throw new RuntimeException(e);
+            jsonString = getter.finish();
+        } catch (Exception e) {
+            throw new Exception(e);
         }
 
         return jsonString;

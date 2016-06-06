@@ -167,7 +167,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         // called when bindService succeeds
         service = ((SunnyService.SunnyServiceBinder) binder).getService();
         service.setListener(this);
-        service.FindSunnyCities();
     }
 
     @Override
@@ -175,6 +174,7 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         lat = location.getLatitude();
         lng = location.getLongitude();
 
+        service.FindSunnyCities(lat, lng);
         Geocoder gcd1 = new Geocoder(getApplicationContext(), Locale.getDefault());
 
         List<Address> addresses;

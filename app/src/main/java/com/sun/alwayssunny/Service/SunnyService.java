@@ -51,8 +51,8 @@ public class SunnyService extends Service {
         this.callback = callback;
     }
 
-    public void FindSunnyCities(){
-        new GetSunnyCities().execute();
+    public void FindSunnyCities(Double lat, Double lng){
+        new GetSunnyCities().execute(lat, lng);
     }
 
 
@@ -60,7 +60,13 @@ public class SunnyService extends Service {
     {
         @Override
         protected ArrayList<WeatherStation> doInBackground(Double... locations) {
-            String jsonString = WeatherAPI.getWeatherStringFromURL();
+            String jsonString = null;
+            try {
+                jsonString = WeatherAPI.getWeatherStringFromURL(locations[0], locations[1]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             JSONArray jArray = new JSONArray();
             try {
                 jArray = new JSONArray(jsonString);

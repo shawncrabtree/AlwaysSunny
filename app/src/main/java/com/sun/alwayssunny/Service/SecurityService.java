@@ -30,6 +30,12 @@ public class SecurityService {
 
         String toEncrypt = jsonObject.toString();
 
+        String encoded = encrypt(toEncrypt);
+
+        return encoded;
+    }
+
+    public static String encrypt(String toEncrypt) {
         String encoded = Base64.encodeToString(toEncrypt.getBytes(), Base64.DEFAULT);
 
         return encoded;
