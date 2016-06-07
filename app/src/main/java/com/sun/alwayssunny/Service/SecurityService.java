@@ -23,21 +23,10 @@ public class SecurityService {
      * encryptLatLong()
      * encrypts the user's location data to send to the cloud server.
      */
-    public static String encryptLatLong(Double lat, Double lng) throws JSONException, GeneralSecurityException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("lat", lat);
-        jsonObject.put("lng", lng);
-
-        String toEncrypt = jsonObject.toString();
-
-        String encoded = encrypt(toEncrypt);
-
-        return encoded;
-    }
+/*
 
     public static String encrypt(String toEncrypt) {
-        String encoded = Base64.encodeToString(toEncrypt.getBytes(), Base64.DEFAULT);
-
+        String encoded = Base64.encodeToString(toEncrypt.getBytes(), Base64.DEFAULT).replace("\n", "");
         return encoded;
-    }
+    }*/
 }

@@ -1,11 +1,12 @@
 package com.sun.alwayssunny.Service;
 
+import android.util.Base64;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +26,8 @@ public class HttpGet {
     }
 
     public void addFormFieldSecure(String name, String value) {
-        params.put(name, SecurityService.encrypt(value));
+        String result =  Base64.encodeToString(value.getBytes(), Base64.DEFAULT).replace("\n", "");
+        params.put(name, result);
     }
 
     public String finish() throws Exception {
@@ -37,9 +39,9 @@ public class HttpGet {
                 queryString.append('&');
             else
                 queryString.append('?');
-            queryString.append(URLEncoder.encode(key, charset));
+            queryString.append(key);
             queryString.append('=');
-            queryString.append(URLEncoder.encode(params.get(key), charset));
+            queryString.append(params.get(key));
         }
 
         URL url = new URL(surl + queryString);

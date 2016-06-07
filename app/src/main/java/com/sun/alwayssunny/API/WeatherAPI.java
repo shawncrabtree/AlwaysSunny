@@ -18,7 +18,7 @@ public class WeatherAPI {
 
     public static String getWeatherStringFromURL(Double lat, Double lng) throws Exception {
         URL url;
-        HttpGet getter = new HttpGet("http://1-dot-alwayscloudy-1328.appspot.com/alwayssunny", "UTF-16");
+        HttpGet getter = new HttpGet("http://1-dot-alwayscloudy-1328.appspot.com/alwayssunny", "UTF-8");
         getter.addFormFieldSecure("lat", lat.toString());
         getter.addFormFieldSecure("lng", lng.toString());
 
