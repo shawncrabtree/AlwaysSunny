@@ -50,13 +50,11 @@ import java.util.Locale;
 import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
 import com.sun.alwayssunny.Service.DB_LocationHelper;
-import com.sun.alwayssunny.Service.SunnyService;
 
 import static com.sun.alwayssunny.R.id.locInfo;
 
-public class MainActivity extends Activity implements LocationListener, ServiceConnection, SunnyService.Callback {
+public class MainActivity extends Activity implements LocationListener {
 
-    private SunnyService service;
     protected LocationManager locationManager;
     protected Handler splashScreenHandler;
     protected Runnable goToLocationList;
@@ -96,15 +94,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
         };
         splashScreenHandler.postDelayed(goToLocationList, 1500);
 
-        // create service that will eventually calculate sunny cities
-        Context app = getApplicationContext();
-        Intent intent = new Intent(app, SunnyService.class);
-        app.startService(intent);
-
-        bindService(intent, this, Context.BIND_AUTO_CREATE);
-
-        // Need to create another context object
-        // That way we don't cause leakage problems
         Context app1 = getApplicationContext();
         dbHelper = new DB_LocationHelper(app1);
 
@@ -162,19 +151,12 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
     @Override
     protected void onStart() { super.onStart(); }
 
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder binder) {
-        // called when bindService succeeds
-        service = ((SunnyService.SunnyServiceBinder) binder).getService();
-        service.setListener(this);
-    }
 
     @Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
 
-        service.FindSunnyCities(lat, lng);
         Geocoder gcd1 = new Geocoder(getApplicationContext(), Locale.getDefault());
 
         List<Address> addresses;
@@ -208,28 +190,6 @@ public class MainActivity extends Activity implements LocationListener, ServiceC
             bt.setText(state + ", " + country);
             bt.setEnabled(true);
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // let's disconnect from the service; it keeps running, though
-        if (service != null)
-            unbindService(this);
-
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        // called when unbindService succeeds
-        if (service != null)
-            service.setListener(null);
-        service = null;
-    }
-
-    @Override
-    public void onCitiesFound(ArrayList<WeatherStation> stations) {
-
     }
 
     public void GoToCurrentLocation(View v){

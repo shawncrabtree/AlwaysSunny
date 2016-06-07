@@ -24,7 +24,6 @@ import com.sun.alwayssunny.API.WeatherAPI;
 import com.sun.alwayssunny.Classes.WeatherStation;
 import com.sun.alwayssunny.R;
 import com.sun.alwayssunny.Service.SecurityService;
-import com.sun.alwayssunny.Service.SunnyService;
 
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
@@ -47,9 +46,8 @@ import java.util.Locale;
 /**
  * Created by Shawn on 4/16/2016.
  */
-public class ResultsActivity extends FragmentActivity implements OnMapReadyCallback, ServiceConnection, SunnyService.Callback {
+public class ResultsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private SunnyService service;
     protected GoogleMap map;
     protected double lat;
     protected double lng;
@@ -70,10 +68,6 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
     @Override
     protected void onStart() {
         super.onStart();
-        // get a reference to the service, for receiving messages
-        Context app = getApplicationContext();
-        Intent intent = new Intent(app, SunnyService.class);
-        bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -83,86 +77,11 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
     }
 
     @Override
-    public void onServiceConnected(ComponentName name, IBinder binder) {
-        // called when bindService succeeds
-        service = ((SunnyService.SunnyServiceBinder) binder).getService();
-        service.setListener(this);
-        if(map != null){
-            onMapReady(map);
-        }
-    }
-
-    @Override
     public void onMapReady(GoogleMap gmap) {
         map = gmap;
-        if(service != null && service.sunnyStations != null){
-            onCitiesFound(service.sunnyStations);
-        }
+        (new GetSunnyCities()).execute(lat, lng);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        disconnectService();
-    }
-
-    private void disconnectService(){
-        if (service != null){
-            unbindService(this);
-        }
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        // called when unbindService succeeds
-        if (service != null)
-            service.setListener(null);
-        service = null;
-    }
-
-    @Override
-    public void onCitiesFound(ArrayList<WeatherStation> stations) {
-        LatLng currentLoc = new LatLng(lat, lng);
-        map.setMyLocationEnabled(true);
-
-        Collections.sort(stations, new Comparator<WeatherStation>() {
-                    @Override
-                    public int compare(WeatherStation w1, WeatherStation w2) {
-                        double w1dist = distance(w1.latitude, w1.longitude, lat, lng);
-                        double w2dist = distance(w2.latitude, w2.longitude, lat, lng);
-                        return w1dist > w2dist ? 1 : -1;
-                    }
-                }
-        );
-
-        ArrayList<LatLng> stationlatlongs = new ArrayList<LatLng>();
-        if (stations.size() >= 3) {
-            for (int i = 0; i < 3; i++) {
-                WeatherStation station = stations.get(i);
-                LatLng stationlatlong = new LatLng(station.latitude, station.longitude);
-                map.addMarker(new MarkerOptions()
-                        .title(station.stationName)
-                        .position(stationlatlong));
-                stationlatlongs.add(stationlatlong);
-            }
-            stationlatlongs.add(currentLoc);
-
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            for (LatLng stationll : stationlatlongs) {
-                builder.include(stationll);
-            }
-            LatLngBounds bounds = builder.build();
-            int padding = 200; // offset from edges of the map in pixels
-            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-                @Override
-                public void onMapLoaded() {
-                    map.animateCamera(cu);
-                }
-            });
-        }
-
-    }
 
     public double distance(double lat1, double lng1, double lat2, double lng2) {
         double earthRadius = 6371000; //meters
@@ -174,4 +93,74 @@ public class ResultsActivity extends FragmentActivity implements OnMapReadyCallb
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         return earthRadius * c;
     }
+
+    private class GetSunnyCities extends AsyncTask<Double, String, ArrayList<WeatherStation>>
+    {
+        @Override
+        protected ArrayList<WeatherStation> doInBackground(Double... locations) {
+            String jsonString = null;
+            try {
+                jsonString = WeatherAPI.getWeatherStringFromURL(locations[0], locations[1]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            JSONArray jArray = new JSONArray();
+            try {
+                jArray = new JSONArray(jsonString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            ArrayList<WeatherStation> stations = new ArrayList<WeatherStation>();
+            for(int i = 0; i < jArray.length(); i++) {
+                try {
+                    JSONObject jObj = jArray.getJSONObject(i);
+                    WeatherStation station = WeatherAPI.getWeatherStationFromJSONObject(jObj);
+                    stations.add(station);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return stations;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<WeatherStation> stations) {
+            LatLng currentLoc = new LatLng(lat, lng);
+            map.setMyLocationEnabled(true);
+
+            ArrayList<LatLng> stationlatlongs = new ArrayList<LatLng>();
+            if (stations.size() >= 3) {
+                for (int i = 0; i < 3; i++) {
+                    WeatherStation station = stations.get(i);
+                    LatLng stationlatlong = new LatLng(station.latitude, station.longitude);
+                    map.addMarker(new MarkerOptions()
+                            .title(station.stationName)
+                            .position(stationlatlong));
+                    stationlatlongs.add(stationlatlong);
+                }
+                stationlatlongs.add(currentLoc);
+
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                for (LatLng stationll : stationlatlongs) {
+                    builder.include(stationll);
+                }
+                LatLngBounds bounds = builder.build();
+                int padding = 200; // offset from edges of the map in pixels
+                final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                    @Override
+                    public void onMapLoaded() {
+                        map.animateCamera(cu);
+                    }
+                });
+            }
+
+        }
+
+
+    }
+
 }
